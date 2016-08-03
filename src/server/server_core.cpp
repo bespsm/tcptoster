@@ -85,21 +85,29 @@ void server_core::status(){
 void server_core::get_log(){
     boost::recursive_mutex::scoped_lock lk(core_mutex);
     if(sessions.capacity() == 0) return;
-    std::string log_name = "logserv";
+    std::string log_name = "log_serv_";
     log_name.append(get_date());
     log_name.append(1,'_');
     log_name.append(get_time());
     log_name.append(std::string(".txt"));
     std::fstream report(log_name, std::ios::out);
+    report
+        << "state(0-run,1-stp,2-flt)"
+        << ";id"
+        << ";bytes read"
+        << ";bytes write"
+        << ";last error"
+        << ";error quantity"
+        << '\n';
     std::for_each(sessions.begin(), sessions.end(),[&report](tcp_session::ptr &n){
         auto stat = n->statistic();
         report
-            << "state(0-run,1-stp,2-flt): " << stat.state
-            << "; id: " << stat.id
-            << "; bytes read: " << stat.bytes_r
-            << "; bytes write: " << stat.bytes_w
-            << "; last error: " << stat.last_error.message()
-            << "; error quantity: " << stat.error_quantity
+            << stat.state << ";"
+            << stat.id << ";"
+            << stat.bytes_r << ";"
+            << stat.bytes_w << ";"
+            << stat.last_error.message() << ";"
+            << stat.error_quantity
             << '\n';
     });
     report.close();

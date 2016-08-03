@@ -27,10 +27,17 @@ void client_core::init(const client_config &conf) {
     std::cout << "clients initialized" << '\n';
 }
 
-void client_core::connect() {
-    manager_.create_sessions();
-    manager_.connect_sessions();
-
+void client_core::start_client(){
+    //assign signal
+    signals_.add(SIGINT);
+    signals_.add(SIGTERM);
+    #if defined(SIGQUIT)
+        signals_.add(SIGQUIT); // defined(SIGQUIT)
+    #endif
+    signals_.async_wait([this](const error_code& err, int num){
+        this->close();
+    });
+    connect();
     //creation threads
     boost::thread thread_pool[threads_count];
     for (int16_t i = 0; i < threads_count; i++)
@@ -38,10 +45,24 @@ void client_core::connect() {
             this->thread_listen();
         });
     for (int16_t i = 0; i < threads_count; i++){
-        //threads[i]->join();
+        //thread_pool[i].join();
         thread_pool[i].detach();
     }
     std::cout << "client started" << '\n';
+}
+
+void client_core::connect() {
+    manager_.create_sessions();
+    manager_.connect_sessions();
+}
+
+void client_core::disconnect(){
+    manager_.delete_sessions();
+}
+
+void client_core::close(){
+    disconnect();
+    service.stop();
 }
 
 void client_core::run_test() {
@@ -49,46 +70,27 @@ void client_core::run_test() {
         std::cout << "client not initialized" << '\n';
         return;
     }
-    std::cout << "main thread: "
-        << boost::this_thread::get_id() << '\n';
-    // creating sessions
+    manager_.run_test();
 }
 
-void client_core::disconnect() {
-    manager_.disconnect_sessions();
-    std::cout << "all clients disconnected" << std::endl;
-}
-
-
-void client_core::close(){
-    disconnect();
-    service.stop();
-}
-
-/*
 void client_core::get_log(){
-    boost::recursive_mutex::scoped_lock lk(core_mutex);
-    if(sessions.capacity() == 0) return;
-    std::string log_name = "logserv";
+    std::string log_name = "log_clinet_";
     log_name.append(get_date());
     log_name.append(1,'_');
     log_name.append(get_time());
     log_name.append(std::string(".txt"));
     std::fstream report(log_name, std::ios::out);
-    std::for_each(sessions.begin(), sessions.end(),[&report](client_session::ptr &n){
-        auto stat = n->statistic();
-        report
-            << "state(0-run,1-stp,2-flt): " << stat.state
-            << "; id: " << stat.id
-            << "; bytes read: " << stat.bytes_r
-            << "; bytes write: " << stat.bytes_w
-            << "; last error: " << stat.last_error.message()
-            << "; error quantity: " << stat.error_quantity
-            << '\n';
-    });
+    report << "client statistic " << get_date() << " - " << get_time() << '\n'
+        << "threads: " << threads_count  << '\n'
+        << "sessions: " << manager_.get_sessions()  << '\n'
+        << "test data size: " << manager_.get_data_size()  << " bytes" << '\n'
+        << "test attemps pro session: " << manager_.get_test_attempts() << '\n'
+        << "all sessions coonnnection time: "
+        << manager_.get_conn_duration() << " msec" << '\n';
+    report << manager_.sessions_statistic();
     report.close();
     std::cout << "logged in " << log_name << '\n';
-}*/
+}
 
 void client_core::thread_listen() {
         std::cout

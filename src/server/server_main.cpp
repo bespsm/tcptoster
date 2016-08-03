@@ -5,7 +5,6 @@ int main(int argc, char* argv[]) {
     try {
         toster::server_config serv_conf("tcptoster_config.xml");
         toster::server::server_core serv(serv_conf);
-        //toster::server::server_core serv;
         serv.start();
         std::cout << "enter cmd:" << std::endl;
         while (true) {
@@ -21,7 +20,7 @@ int main(int argc, char* argv[]) {
                 serv.status();
             else if (msg == "init")
                 serv.init(serv_conf);
-            else if (msg == "exit"){
+            else if (msg == "close" || msg == "exit"){
                 serv.stop();
                 return 0;}
             else

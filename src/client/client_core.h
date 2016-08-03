@@ -17,11 +17,12 @@ public:
     explicit client_core(const client_config &conf);
     explicit client_core();
     void init(const client_config &conf);
+    void start_client();
     void connect();
     void disconnect();
     bool is_run(){return !service.stopped();}
     void run_test();
-    //void get_log();
+    void get_log();
     void close();
 private:
     void thread_listen();

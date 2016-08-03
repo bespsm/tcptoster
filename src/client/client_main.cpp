@@ -5,19 +5,21 @@ int main(int argc, char* argv[]) {
     try {
         toster::client_config conf("tcptoster_config.xml");
         toster::client::client_core client(conf);
-        client.connect();
+        client.start_client();
         std::cout << "enter cmd:" << std::endl;
         while (true) {
             std::string msg;
             std::getline(std::cin, msg);
-            if (msg == "connect")
+            if (msg == "conn")
                 client.connect();
-            else if (msg == "disconnect")
+            else if (msg == "disconn")
                 client.disconnect();
             else if (msg == "test")
                 client.run_test();
             else if (msg == "isrun")
                 std::cout << client.is_run() << std::endl;
+            else if (msg == "log")
+                client.get_log();
             else if (msg == "init"){
                 toster::client_config newconf("tcptoster_config.xml");
                 client.init(newconf);

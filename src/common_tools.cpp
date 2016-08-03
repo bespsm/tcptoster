@@ -52,7 +52,7 @@ client_config::client_config(const std::string &filename){
         port = tree.get("tcptoster_config.client.port", 0);
         sessions = tree.get("tcptoster_config.client.sessions", 0);
         data_size = tree.get("tcptoster_config.client.data_size", 0);
-        data_queue = tree.get("tcptoster_config.client.data_queue", 0);
+        test_attempts = tree.get("tcptoster_config.client.test_attempts", 0);
     }
     catch (std::exception &e){
         std::cerr << "Error: " << e.what() << "\n";

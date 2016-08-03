@@ -7,9 +7,9 @@
 	<client>
 		<address>127.0.0.1</address>
 		<port>8001</port>
-		<sessions>10</sessions>
+		<sessions>1000</sessions>
 		<threads>2</threads>
 		<data_size>128</data_size>
-		<data_queue>128</data_queue>
+		<test_attempts>128</test_attempts>
 	</client>
 </tcptoster_config>

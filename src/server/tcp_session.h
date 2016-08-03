@@ -15,7 +15,7 @@ typedef boost::system::error_code error_code;
 
 enum session_state { runnig = 0, stopped, faulted };
 struct session_statistics {
-    session_statistics() {id = rand();}
+    session_statistics() {id = rand() %65535;}
     session_state  state = stopped;
     int id;
     size_t bytes_r = 0;

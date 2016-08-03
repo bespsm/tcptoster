@@ -21,7 +21,7 @@ struct client_config {
     int16_t port;
     int16_t sessions;
     int16_t data_size;
-    int16_t data_queue;
+    int16_t test_attempts;
 };
 
 } //toster

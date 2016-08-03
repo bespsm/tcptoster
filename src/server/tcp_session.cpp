@@ -28,7 +28,6 @@ void tcp_session::stop_del() {
     if (stat_.state != runnig) return;
     stat_.state = stopped;
     sock_.cancel();
-    sock_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     sock_.close();
     boost::recursive_mutex::scoped_lock lk(serv_mutex);
     sess_array_.erase(
@@ -41,7 +40,6 @@ void tcp_session::stop() {
     if (stat_.state != runnig) return;
     stat_.state = stopped;
     sock_.cancel();
-    sock_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     sock_.close();
 }
 
