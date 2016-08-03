@@ -2,11 +2,7 @@
 #define CLIENT_CORE
 
 #include "client_manager.h"
-#include <boost/thread.hpp>
-#include <common_tools.h>
 #include "boost/asio/signal_set.hpp"
-#include <boost/asio/io_service.hpp>
-#include "boost/date_time/posix_time/posix_time_types.hpp"
 
 namespace toster {
 namespace client {
@@ -20,11 +16,12 @@ public:
     void start_client();
     void connect();
     void disconnect();
-    bool is_run(){return !service.stopped();}
     void run_test();
-    void get_log();
+    void log_file();
+    void log_console();
     void close();
 private:
+    void log(std::ostream &str);
     void thread_listen();
 
     int16_t threads_count;

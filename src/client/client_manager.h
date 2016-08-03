@@ -3,8 +3,6 @@
 
 #include "common_tools.h"
 #include "client_session.h"
-#include "boost/asio/signal_set.hpp"
-#include <vector>
 
 namespace toster {
 namespace client {
@@ -21,7 +19,11 @@ public:
     int16_t& get_sessions() {return sessions_count;}
     int16_t& get_data_size() {return data_size;}
     int16_t& get_test_attempts() {return test_attempts;}
-    long& get_conn_duration() {return conn_duration;}
+    long get_conn_duration();
+    long get_test_duration();
+    long get_slowest_attempt();
+    long get_fastest_attempt();
+    int16_t get_success_sessions();
     std::string sessions_statistic();
 
 private:
@@ -34,10 +36,8 @@ private:
     int16_t data_size;
     int16_t test_attempts;
 
-    int16_t on_connected_sessions_;
     boost::posix_time::ptime conn_start;
-    boost::posix_time::ptime conn_end;
-    long conn_duration;
+    boost::posix_time::ptime test_start;
     boost::recursive_mutex manager_mutex;
     boost::asio::io_service::work* work_;
 };

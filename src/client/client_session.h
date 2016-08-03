@@ -2,10 +2,7 @@
 #define CLIENT_SESSION
 
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/thread.hpp>
-#include "boost/date_time/posix_time/posix_time_types.hpp"
-#include <boost/asio/generic/stream_protocol.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 class client_session;
 
@@ -20,29 +17,33 @@ struct client_stat{
     int16_t attempts_fault;
     int16_t attempts_succes;
     int16_t attempts;
+    boost::posix_time::ptime conn_time;
+    boost::posix_time::ptime test_time;
 };
 
 typedef boost::system::error_code error_code;
 
 class client_session :
-    public boost::enable_shared_from_this<client_session>,
     boost::noncopyable {
 
 public:
     typedef boost::shared_ptr<client_session> ptr;
     ~client_session();
-    client_session(boost::asio::io_service & service,const int16_t& data_size,const int16_t& test_attempts);
+    client_session(boost::asio::io_service & service,
+        const int16_t& data_size,
+        const int16_t& test_attempts,
+        boost::asio::ip::tcp::endpoint& ep);
 
     boost::asio::ip::tcp::socket & sock() { return sock_;}
     client_stat& statistic(){return stat_;}
-    void set_conn_success();
-    void set_conn_error();
+    void connect();
     void run();
     void close();
 private:
     void init_stat();
     void do_write();
     void do_read();
+    boost::asio::ip::tcp::endpoint ep_;
     boost::posix_time::ptime attempt_start;
     boost::posix_time::ptime attempt_end;
     boost::asio::ip::tcp::socket sock_;

@@ -1,8 +1,6 @@
 #include "client_session.h"
-#include <boost/bind.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
-#include <iostream>
 
 namespace toster {
 namespace client {
@@ -11,7 +9,12 @@ client_session::~client_session() {
     std::cout << "bye session" << std::endl;
 }
 
-client_session::client_session(boost::asio::io_service &service, const int16_t &data_size, const int16_t &test_attempts):
+client_session::client_session(
+        boost::asio::io_service &service,
+        const int16_t &data_size,
+        const int16_t &test_attempts,
+        boost::asio::ip::tcp::endpoint& ep):
+    ep_(ep),
     sock_(service),
     data_size_(data_size),
     test_attempts_(test_attempts),
@@ -26,14 +29,17 @@ void client_session::init_stat(){
     stat_.attempts = test_attempts_;
 }
 
-void client_session::set_conn_success(){
-    //boost::recursive_mutex::scoped_lock lk(session_mutex);
-    stat_.is_connected = true;
-}
-
-void client_session::set_conn_error(){
-    //boost::recursive_mutex::scoped_lock lk(session_mutex);
-    stat_.is_connected = false;
+void client_session::connect(){
+    sock_.async_connect(ep_,[this](const error_code& err){
+    if(err){
+        this->stat_.is_connected = false;
+        std::cerr << "error: " << err.message() << '\n';
+    }
+    else{
+        this->stat_.is_connected = true;
+    }
+    this->stat_.conn_time = boost::posix_time::microsec_clock::universal_time();
+    });
 }
 
 void client_session::run(){
@@ -54,8 +60,6 @@ void client_session::close(){
     this->sock_.cancel();
     this->sock_.close();
 }
-
-
 
 void client_session::do_read(){
     boost::asio::async_read(sock_,boost::asio::buffer(read_buffer_,data_size_+1),boost::asio::transfer_at_least(data_size_+1),
@@ -92,6 +96,8 @@ void client_session::do_write(){
             if (err) std::cerr << "error: " << err.message() << '\n';
             this->do_read();
         });
+        //finish test
+        this->stat_.test_time = boost::posix_time::microsec_clock::universal_time();
     }
 }
 

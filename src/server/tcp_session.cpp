@@ -2,9 +2,6 @@
 #include <boost/bind.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/write.hpp>
-#include <iostream>
-#include <algorithm>
-#include <boost/thread.hpp>
 
 namespace toster {
 namespace server {

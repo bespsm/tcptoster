@@ -1,9 +1,6 @@
 #include "server_core.h"
-#include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include <fstream>
-#include <algorithm>
-#include <common_tools.h>
 
 namespace toster {
 namespace server {
@@ -81,17 +78,26 @@ void server_core::status(){
             << '\n'; });
 }
 
+void server_core::log_console(){
+    log(std::cout);
+}
 
-void server_core::get_log(){
+void server_core::log_file(){
     boost::recursive_mutex::scoped_lock lk(core_mutex);
     if(sessions.capacity() == 0) return;
     std::string log_name = "log_serv_";
     log_name.append(get_date());
     log_name.append(1,'_');
     log_name.append(get_time());
-    log_name.append(std::string(".txt"));
+    log_name.append(std::string(".csv"));
     std::fstream report(log_name, std::ios::out);
-    report
+    log(report);
+    report.close();
+    std::cout << "logged in " << log_name << '\n';
+}
+
+void server_core::log(std::ostream &str){
+    str
         << "state(0-run,1-stp,2-flt)"
         << ";id"
         << ";bytes read"
@@ -99,19 +105,18 @@ void server_core::get_log(){
         << ";last error"
         << ";error quantity"
         << '\n';
-    std::for_each(sessions.begin(), sessions.end(),[&report](tcp_session::ptr &n){
+    boost::recursive_mutex::scoped_lock lk(core_mutex);
+    std::for_each(sessions.begin(), sessions.end(),[&str](tcp_session::ptr &n){
         auto stat = n->statistic();
-        report
-            << stat.state << ";"
-            << stat.id << ";"
-            << stat.bytes_r << ";"
-            << stat.bytes_w << ";"
-            << stat.last_error.message() << ";"
+        str
+            << stat.state << "; "
+            << stat.id << "; "
+            << stat.bytes_r << "; "
+            << stat.bytes_w << "; "
+            << stat.last_error.message() << "; "
             << stat.error_quantity
             << '\n';
     });
-    report.close();
-    std::cout << "logged in " << log_name << '\n';
 }
 
 

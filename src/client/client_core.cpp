@@ -1,7 +1,6 @@
 #include "client_core.h"
-#include <boost/bind.hpp>
 #include <fstream>
-#include <algorithm>
+#include <boost/thread/thread.hpp>
 #include "client_manager.h"
 
 namespace toster {
@@ -73,23 +72,38 @@ void client_core::run_test() {
     manager_.run_test();
 }
 
-void client_core::get_log(){
+void client_core::log_file(){
     std::string log_name = "log_clinet_";
     log_name.append(get_date());
     log_name.append(1,'_');
     log_name.append(get_time());
-    log_name.append(std::string(".txt"));
+    log_name.append(std::string(".csv"));
     std::fstream report(log_name, std::ios::out);
-    report << "client statistic " << get_date() << " - " << get_time() << '\n'
-        << "threads: " << threads_count  << '\n'
-        << "sessions: " << manager_.get_sessions()  << '\n'
-        << "test data size: " << manager_.get_data_size()  << " bytes" << '\n'
-        << "test attemps pro session: " << manager_.get_test_attempts() << '\n'
-        << "all sessions coonnnection time: "
-        << manager_.get_conn_duration() << " msec" << '\n';
-    report << manager_.sessions_statistic();
+    log(report);
     report.close();
     std::cout << "logged in " << log_name << '\n';
+}
+
+void client_core::log_console(){
+    log(std::cout);
+}
+
+void client_core::log(std::ostream &str) {
+    str << "client statistic " << get_date() << " - " << get_time() << '\n'
+        << "threads: " << threads_count  << '\n'
+        << "sessions: " << manager_.get_sessions()  << '\n'
+        << "successful testet sessions: "  << manager_.get_success_sessions() << '\n'
+        << "test data size: " << manager_.get_data_size()  << " bytes" << '\n'
+        << "test attemps pro session: " << manager_.get_test_attempts() << '\n'
+        << "all sessions connection duration: "
+        << manager_.get_conn_duration() << " msec" << '\n'
+        << "all sessions test duration: "
+        << manager_.get_test_duration() << " msec" << '\n'
+        << "slowest attempt duration: "
+        << manager_.get_slowest_attempt() << " msec" << '\n'
+        << "fastest attempt duration: "
+        << manager_.get_fastest_attempt() << " msec" << '\n';
+    str << manager_.sessions_statistic();
 }
 
 void client_core::thread_listen() {

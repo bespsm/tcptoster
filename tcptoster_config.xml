@@ -2,14 +2,14 @@
 <tcptoster_config>
 	<server>
 		<threads>2</threads>
-		<port>8001</port>
+		<port>8006</port>
 	</server>
 	<client>
 		<address>127.0.0.1</address>
-		<port>8001</port>
+		<port>8006</port>
 		<sessions>1000</sessions>
-		<threads>2</threads>
-		<data_size>128</data_size>
+		<threads>1</threads>
+		<data_size>512</data_size>
 		<test_attempts>128</test_attempts>
 	</client>
 </tcptoster_config>

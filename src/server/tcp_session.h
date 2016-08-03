@@ -2,7 +2,7 @@
 #define TCP_SESSION
 
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/thread.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
@@ -49,9 +49,6 @@ private:
     std::vector<tcp_session::ptr> & sess_array_;
     boost::recursive_mutex& serv_mutex;
 };
-
-
-
 
 
 } //server

@@ -1,5 +1,4 @@
 #include "client_core.h"
-#include <iostream>
 
 int main(int argc, char* argv[]) {
     try {
@@ -16,10 +15,10 @@ int main(int argc, char* argv[]) {
                 client.disconnect();
             else if (msg == "test")
                 client.run_test();
-            else if (msg == "isrun")
-                std::cout << client.is_run() << std::endl;
-            else if (msg == "log")
-                client.get_log();
+            else if (msg == "logfile")
+                client.log_file();
+            else if (msg == "logconsole")
+                client.log_console();
             else if (msg == "init"){
                 toster::client_config newconf("tcptoster_config.xml");
                 client.init(newconf);

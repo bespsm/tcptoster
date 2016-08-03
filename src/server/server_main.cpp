@@ -1,5 +1,4 @@
 #include "server_core.h"
-#include <iostream>
 
 int main(int argc, char* argv[]) {
     try {
@@ -14,12 +13,14 @@ int main(int argc, char* argv[]) {
                 serv.start();
             else if (msg == "stop")
                 serv.stop();
-            else if (msg == "log")
-                serv.get_log();
-            else if (msg == "stat")
-                serv.status();
-            else if (msg == "init")
+            else if (msg == "logfile")
+                serv.log_file();
+            else if (msg == "logconsole")
+                serv.log_console();
+            else if (msg == "init"){
+                toster::server_config newconf("tcptoster_config.xml");
                 serv.init(serv_conf);
+            }
             else if (msg == "close" || msg == "exit"){
                 serv.stop();
                 return 0;}

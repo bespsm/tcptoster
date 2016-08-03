@@ -1,14 +1,9 @@
 #ifndef SERVER_CORE
 #define SERVER_CORE
 
-
-//struct server_config;
 #include <common_tools.h>
 #include "tcp_session.h"
 #include "boost/asio/signal_set.hpp"
-#include <boost/asio/io_service.hpp>
-#include <vector>
-
 
 namespace toster {
 namespace server {
@@ -23,8 +18,10 @@ public:
     void stop();
     void status();
     void kill_sessions();
-    void get_log();
+    void log_file();
+    void log_console();
 private:
+    void log(std::ostream &str);
     void thread_listen();
     void handle_accept(tcp_session* client, const error_code & err);
     //void check_sessions(const error_code & err);
