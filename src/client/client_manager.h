@@ -30,7 +30,6 @@ private:
     boost::asio::ip::tcp::endpoint ep_;
     boost::asio::io_service & service_;
     std::vector<client_session::ptr> sessions_;
-    std::vector<client_stat> array_statistics;
 
     int16_t sessions_count;
     int16_t data_size;
@@ -39,7 +38,6 @@ private:
     boost::posix_time::ptime conn_start;
     boost::posix_time::ptime test_start;
     boost::recursive_mutex manager_mutex;
-    boost::asio::io_service::work* work_;
 };
 } //client
 } //toster

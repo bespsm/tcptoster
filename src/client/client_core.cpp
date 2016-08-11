@@ -36,7 +36,8 @@ void client_core::start_client(){
     signals_.async_wait([this](const error_code& err, int num){
         this->close();
     });
-    connect();
+    work_ = new boost::asio::io_service::work(service);
+    //connect();
     //creation threads
     boost::thread thread_pool[threads_count];
     for (int16_t i = 0; i < threads_count; i++)
@@ -93,16 +94,16 @@ void client_core::log(std::ostream &str) {
         << "threads: " << threads_count  << '\n'
         << "sessions: " << manager_.get_sessions()  << '\n'
         << "successful testet sessions: "  << manager_.get_success_sessions() << '\n'
-        << "test data size: " << manager_.get_data_size()  << " bytes" << '\n'
+        << "test data size: " << manager_.get_data_size()  << " bytes\n"
         << "test attemps pro session: " << manager_.get_test_attempts() << '\n'
         << "all sessions connection duration: "
-        << manager_.get_conn_duration() << " msec" << '\n'
+        << manager_.get_conn_duration() << " msec\n"
         << "all sessions test duration: "
-        << manager_.get_test_duration() << " msec" << '\n'
+        << manager_.get_test_duration() << " msec\n"
         << "slowest attempt duration: "
-        << manager_.get_slowest_attempt() << " msec" << '\n'
+        << manager_.get_slowest_attempt() << " msec\n"
         << "fastest attempt duration: "
-        << manager_.get_fastest_attempt() << " msec" << '\n';
+        << manager_.get_fastest_attempt() << " msec\n";
     str << manager_.sessions_statistic();
 }
 

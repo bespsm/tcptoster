@@ -73,7 +73,7 @@ void server_core::status(){
             << "; id: " << stat.id
             << "; bytes read: " << stat.bytes_r
             << "; bytes write: " << stat.bytes_w
-            << "; last error: " << stat.last_error.message()
+            << "; last error: " << stat.last_error
             << "; error quantity: " << stat.error_quantity
             << '\n'; });
 }
@@ -103,18 +103,15 @@ void server_core::log(std::ostream &str){
         << ";bytes read"
         << ";bytes write"
         << ";last error"
-        << ";error quantity"
-        << '\n';
+        << ";error quantity\n";
     boost::recursive_mutex::scoped_lock lk(core_mutex);
     std::for_each(sessions.begin(), sessions.end(),[&str](tcp_session::ptr &n){
-        auto stat = n->statistic();
-        str
-            << stat.state << "; "
-            << stat.id << "; "
-            << stat.bytes_r << "; "
-            << stat.bytes_w << "; "
-            << stat.last_error.message() << "; "
-            << stat.error_quantity
+        str << n->statistic().state << "; "
+            << n->statistic().id << "; "
+            << n->statistic().bytes_r << "; "
+            << n->statistic().bytes_w << "; "
+            << n->statistic().last_error << "; "
+            << n->statistic().error_quantity
             << '\n';
     });
 }
@@ -136,11 +133,11 @@ void server_core::handle_accept(tcp_session* client,const error_code &err) {
         boost::recursive_mutex::scoped_lock lk(core_mutex);
         sessions.push_back(shared_sess);
         shared_sess->start();
-        std::cout << boost::this_thread::get_id() << ": new session" << std::endl;
+        //std::cout << boost::this_thread::get_id() << ": new session" << std::endl;
     }
     else {
         delete client;
-        std::cerr << err.message() << '\n';
+        std::cerr << err << '\n';
     }
 
     tcp_session * sess_ = new tcp_session(service,sessions,core_mutex);

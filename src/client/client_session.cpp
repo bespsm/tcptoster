@@ -1,12 +1,17 @@
 #include "client_session.h"
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
+#include <boost/asio/error.hpp>
 
 namespace toster {
 namespace client {
 
+int client_stat::counter = 0;    //init counter
+
 client_session::~client_session() {
-    std::cout << "bye session" << std::endl;
+    //std::cout << "bye session" << std::endl;
 }
 
 client_session::client_session(
@@ -32,8 +37,9 @@ void client_session::init_stat(){
 void client_session::connect(){
     sock_.async_connect(ep_,[this](const error_code& err){
     if(err){
+        boost::recursive_mutex::scoped_lock lk(session_mutex);
         this->stat_.is_connected = false;
-        std::cerr << "error: " << err.message() << '\n';
+        std::cerr << err << '\n';
     }
     else{
         this->stat_.is_connected = true;
@@ -65,7 +71,7 @@ void client_session::do_read(){
     boost::asio::async_read(sock_,boost::asio::buffer(read_buffer_,data_size_+1),boost::asio::transfer_at_least(data_size_+1),
     [this](const error_code & err, size_t bytes){
         if (err){
-            std::cerr << "error: " << err.message() << '\n';
+            std::cerr << "error: " << err << '\n';
         }
         this->attempt_end = boost::posix_time::microsec_clock::universal_time();
         this->stat_.echo_time.push_back((this->attempt_end - this->attempt_start).total_milliseconds());
@@ -93,7 +99,7 @@ void client_session::do_write(){
 
         sock_.async_write_some(boost::asio::buffer(write_buffer_,data_size_+1),
         [this](const error_code & err, size_t bytes){
-            if (err) std::cerr << "error: " << err.message() << '\n';
+            if (err) std::cerr << "error: " << err << '\n';
             this->do_read();
         });
         //finish test

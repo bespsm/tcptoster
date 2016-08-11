@@ -1,5 +1,6 @@
 #include "server_core.h"
 
+
 int main(int argc, char* argv[]) {
     try {
         toster::server_config serv_conf("tcptoster_config.xml");
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
                 serv.log_console();
             else if (msg == "init"){
                 toster::server_config newconf("tcptoster_config.xml");
-                serv.init(serv_conf);
+                serv.init(newconf);
             }
             else if (msg == "close" || msg == "exit"){
                 serv.stop();

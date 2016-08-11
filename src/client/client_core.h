@@ -30,6 +30,7 @@ private:
 
     boost::recursive_mutex core_mutex;
     client_manager manager_;
+    boost::asio::io_service::work* work_;
     bool is_init;
 };
 

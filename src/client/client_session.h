@@ -10,7 +10,8 @@ namespace toster {
 namespace client {
 
 struct client_stat{
-    client_stat() {id = rand() %65535;}
+    static int counter;
+    client_stat() {id = ++counter;}
     int id;
     std::vector<long> echo_time;
     bool is_connected;
@@ -23,8 +24,9 @@ struct client_stat{
 
 typedef boost::system::error_code error_code;
 
-class client_session :
-    boost::noncopyable {
+class client_session
+    //boost::noncopyable
+    {
 
 public:
     typedef boost::shared_ptr<client_session> ptr;

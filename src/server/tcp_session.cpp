@@ -6,8 +6,10 @@
 namespace toster {
 namespace server {
 
+int session_statistics::counter = 0;    //init counter
+
 tcp_session::~tcp_session() {
-    std::cout << "bye session" << std::endl;
+    //std::cout << "bye session" << std::endl;
 }
 
 tcp_session::tcp_session(boost::asio::io_service& serv, std::vector<ptr> & arr, boost::recursive_mutex& mut):

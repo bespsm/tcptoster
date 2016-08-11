@@ -15,7 +15,11 @@ typedef boost::system::error_code error_code;
 
 enum session_state { runnig = 0, stopped, faulted };
 struct session_statistics {
-    session_statistics() {id = rand() %65535;}
+    static int counter;
+    session_statistics():
+        last_error()
+        {this->id = ++session_statistics::counter; //rand() %65535;
+        }
     session_state  state = stopped;
     int id;
     size_t bytes_r = 0;
@@ -23,6 +27,7 @@ struct session_statistics {
     error_code last_error;
     size_t error_quantity = 0;
 };
+//int session_statistics::counter = 0;
 
 class tcp_session : public boost::enable_shared_from_this<tcp_session>, boost::noncopyable {
 

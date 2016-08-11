@@ -20,7 +20,6 @@ void client_manager::create_sessions(){
         client_session * sess = new client_session(service_,data_size,test_attempts,ep_);
         client_session::ptr shared_sess(sess);
         sessions_.push_back(shared_sess);
-        array_statistics.push_back(sess->statistic());
     }
 }
 
@@ -30,7 +29,6 @@ void client_manager::connect_sessions() {
         [](client_session::ptr &a){
         a->connect();
     });
-    work_ = new boost::asio::io_service::work(service_);
 }
 
 void client_manager::run_test(){
@@ -48,6 +46,9 @@ void client_manager::run_test(){
 }
 
 long client_manager::get_conn_duration(){
+    boost::recursive_mutex::scoped_lock lk(manager_mutex);
+    if (sessions_.size() == 0 ||
+       sessions_.front()->statistic().conn_time == boost::posix_time::ptime()) {return 0;}
     boost::posix_time::ptime conn_end = this->conn_start;
     std::for_each(sessions_.begin(),sessions_.end(),
         [&conn_end](client_session::ptr &a){
@@ -58,6 +59,9 @@ long client_manager::get_conn_duration(){
 }
 
 long client_manager::get_test_duration(){
+    boost::recursive_mutex::scoped_lock lk(manager_mutex);
+    if (sessions_.size() == 0 ||
+       sessions_.front()->statistic().test_time == boost::posix_time::ptime()) {return 0;}
     boost::posix_time::ptime test_end = this->test_start;
     std::for_each(sessions_.begin(),sessions_.end(),
         [&test_end](client_session::ptr &a){
@@ -68,6 +72,9 @@ long client_manager::get_test_duration(){
 }
 
 long client_manager::get_slowest_attempt(){
+    boost::recursive_mutex::scoped_lock lk(manager_mutex);
+    if (sessions_.size() == 0 ||
+       sessions_.front()->statistic().echo_time.size() == 0) {return 0;}
     long slowest = sessions_.front()->statistic().echo_time.back();
     std::for_each(sessions_.begin(),sessions_.end(),
         [&slowest,this](client_session::ptr &a){
@@ -79,6 +86,9 @@ long client_manager::get_slowest_attempt(){
 }
 
 long client_manager::get_fastest_attempt(){
+    boost::recursive_mutex::scoped_lock lk(manager_mutex);
+    if (sessions_.size() == 0 ||
+       sessions_.front()->statistic().echo_time.size() == 0) {return 0;}
     long fastest = sessions_.front()->statistic().echo_time.front();
     std::for_each(sessions_.begin(),sessions_.end(),
         [&fastest,this](client_session::ptr &a){
@@ -90,6 +100,8 @@ long client_manager::get_fastest_attempt(){
 }
 
 int16_t client_manager::get_success_sessions(){
+    boost::recursive_mutex::scoped_lock lk(manager_mutex);
+    if (sessions_.size() == 0) {return 0;}
     int16_t count;
     std::for_each(sessions_.begin(),sessions_.end(),
         [&count](client_session::ptr &a){
@@ -103,16 +115,18 @@ std::string client_manager::sessions_statistic(){
     std::stringstream stream_;
     stream_ << "session id; isconnected; attempts succes; "
         << "attempts fault; slowest attempt(msec); medium attempt(msec); fastest attempt(msec)" << '\n';
+    boost::recursive_mutex::scoped_lock lk(manager_mutex);
+    if (sessions_.size() == 0) {std::string out = stream_.str(); return out;}
     std::for_each(sessions_.begin(), sessions_.end(),
     [&stream_,this](client_session::ptr &n){
-        std::sort(n->statistic().echo_time.begin(),n->statistic().echo_time.end());
+            std::sort(n->statistic().echo_time.begin(),n->statistic().echo_time.end());
         stream_ << n->statistic().id << "; "
                 << n->statistic().is_connected << "; "
                 << n->statistic().attempts_succes << "; "
                 << n->statistic().attempts_fault << "; "
-                << n->statistic().echo_time.back() << "; "
-                << n->statistic().echo_time[this->test_attempts / 2] << "; "
-                << n->statistic().echo_time.front()
+                << (n->statistic().echo_time.size() == 0 ? 0 : n->statistic().echo_time.back()) << "; "
+                << (n->statistic().echo_time.size() == 0 ? 0 : n->statistic().echo_time[this->test_attempts / 2]) << "; "
+                << (n->statistic().echo_time.size() == 0 ? 0 : n->statistic().echo_time.front())
                 << '\n';
     });
     std::string out = stream_.str();
@@ -121,7 +135,7 @@ std::string client_manager::sessions_statistic(){
 
 void client_manager::delete_sessions(){
     boost::recursive_mutex::scoped_lock lk(manager_mutex);
-    if(sessions_.capacity() == 0) return;
+    if(sessions_.size() == 0) return;
     std::for_each(sessions_.begin(), sessions_.end(),[](client_session::ptr &n){
         n->close();
     });
